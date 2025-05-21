@@ -9,16 +9,21 @@ using Blog_App.Data;
 using Blog_App.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace Blog_App.Controllers
 {
     public class NotesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly ILogger<NotesController> _logger;
 
-        public NotesController(ApplicationDbContext context)
+        public NotesController(ApplicationDbContext context, UserManager<IdentityUser> userManager, ILogger<NotesController> logger)
         {
             _context = context;
+            _userManager = userManager;
+            _logger = logger;
         }
 
         // GET: Notes
@@ -72,11 +77,25 @@ namespace Blog_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,NoteTitle,NoteText")] Note note)
         {
+            // set author to current user (remove from validation as not included in form)
+            note.NoteAuthor = User.Identity.Name;
+            ModelState.Remove(nameof(Note.NoteAuthor));
+
             if (ModelState.IsValid)
             {
                 _context.Add(note);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                foreach (var val in ModelState)
+                {
+                    foreach (var error in val.Value.Errors)
+                    {
+                        _logger.LogInformation(error.ErrorMessage);
+                    }
+                }
             }
             return View(note);
         }
