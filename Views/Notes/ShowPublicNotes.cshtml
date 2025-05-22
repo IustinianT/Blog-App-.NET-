@@ -1,11 +1,5 @@
 ﻿@model IEnumerable<Blog_App.Models.Note>
 
-@{
-    ViewData["Title"] = "Index";
-}
-
-<h1>Index</h1>
-
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -15,10 +9,16 @@
             <th>
                 @Html.DisplayNameFor(model => model.NoteTitle)
             </th>
-            <th></th>
+            <th>
+                @Html.DisplayNameFor(model => model.NoteText)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.NoteAuthor)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsPublic)
+            </th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -28,15 +28,18 @@
                 @Html.DisplayFor(modelItem => item.NoteTitle)
             </td>
             <td>
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                @if (item.NoteAuthor == User.Identity.Name) 
-                {
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                }
+                @Html.DisplayFor(modelItem => item.NoteText)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.NoteAuthor)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsPublic)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>
         </tr>
 }

@@ -29,7 +29,7 @@ namespace Blog_App.Controllers
         // GET: Notes
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Note.ToListAsync());
+            return View(await _context.Note.Where( x => x.IsPublic == true ) .ToListAsync());
         }
 
         // GET: Notes/ShowSearchForm
@@ -41,7 +41,22 @@ namespace Blog_App.Controllers
         // POST: Notes/ShowSearchResults
         public async Task<IActionResult> ShowSearchResults(String SearchPhrase)
         {
-            return View("Index", await _context.Note.Where( x => x.NoteText.Contains(SearchPhrase) ).ToListAsync());
+            return View("Index", await _context.Note.Where( 
+                x => x.NoteText.Contains(SearchPhrase) && x.IsPublic == true ).ToListAsync());
+        }
+
+        // GET: Notes/ShowSearchForm
+        public async Task<IActionResult> ShowPublicNotes()
+        {
+            return View("ShowPublicNotes", await _context.Note.Where( 
+                x => (x.IsPublic == true) && (x.NoteAuthor == User.Identity.Name)).ToListAsync());
+        }
+
+        // GET: Notes/ShowSearchForm
+        public async Task<IActionResult> ShowPrivateNotes()
+        {
+            return View("ShowPrivateNotes", await _context.Note.Where(
+                x => (x.IsPublic == false) && (x.NoteAuthor == User.Identity.Name)).ToListAsync());
         }
 
         // GET: Notes/Details/5
@@ -75,7 +90,7 @@ namespace Blog_App.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,NoteTitle,NoteText")] Note note)
+        public async Task<IActionResult> Create([Bind("Id,NoteTitle,NoteText,IsPublic")] Note note)
         {
             // set author to current user (remove from validation as not included in form)
             note.NoteAuthor = User.Identity.Name;
@@ -89,6 +104,7 @@ namespace Blog_App.Controllers
             }
             else
             {
+                _logger.LogInformation("CREATING ERRORS: ");
                 foreach (var val in ModelState)
                 {
                     foreach (var error in val.Value.Errors)
@@ -130,6 +146,10 @@ namespace Blog_App.Controllers
                 return NotFound();
             }
 
+            // set author to current user (remove from validation as not included in form)
+            note.NoteAuthor = User.Identity.Name;
+            ModelState.Remove(nameof(Note.NoteAuthor));
+
             if (ModelState.IsValid)
             {
                 try
@@ -149,6 +169,17 @@ namespace Blog_App.Controllers
                     }
                 }
                 return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                _logger.LogInformation("EDITTING ERRORS: ");
+                foreach (var val in ModelState)
+                {
+                    foreach (var error in val.Value.Errors)
+                    {
+                        _logger.LogInformation(error.ErrorMessage);
+                    }
+                }
             }
             return View(note);
         }

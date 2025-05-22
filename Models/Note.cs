@@ -13,6 +13,8 @@ namespace Blog_App.Models
         [Required]
         public string NoteAuthor { get; set; }
 
+        public bool IsPublic { get; set; }
+
         public Note() { }
     }
 }

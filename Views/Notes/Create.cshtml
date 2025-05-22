@@ -23,6 +23,10 @@
                 <span asp-validation-for="NoteText" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="IsPublic" class="form-check-label"></label>
+                <input asp-for="IsPublic" class="form-check-input"/>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
